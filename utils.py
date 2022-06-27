@@ -8,30 +8,44 @@ from log import get_console
 
 console = get_console(format='{message}')
 
+unwind_console = get_console(format='<light-yellow>unwind</light-yellow>{message}')
+
 
 def unwind(gen, ok, fail, ret=None, method='send'):
-    console(f'unwind(gen={gen}, ok={ok}, fail={fail}, ret={ret}, method={method})')
+    unwind_console(f'(gen={gen}, ok={ok}, fail={fail}, ret={ret}, method={method})')
 
     try:
         ret = getattr(gen, method)(ret)
+        unwind_console(f': start generator, ret={ret}')
+
     except StopIteration as stop:
+        unwind_console(f': StopIteration, return {ok}({stop.value})')
+
         return ok(stop.value)
     except Exception as e:
+        unwind_console(f': Exception, return {fail}({e})')
+
         return fail(e)
 
     if is_generator(ret):
+        unwind_console(f': ret is_generator')
+
         unwind(
             ret,
             ok=lambda x: unwind(gen, ok, fail, x),
             fail=lambda e: unwind(gen, ok, fail, e, 'throw'),
         )
     elif is_promise(ret):
+        unwind_console(': ret is_promise')
+
         ret.then(
             lambda x=None: unwind(gen, ok, fail, x)
         ).catch(
             lambda e: unwind(gen, ok, fail, e, 'throw')
         )
     else:
+        unwind_console(': else')
+
         wait_all(
             ret,
             lambda x=None: unwind(gen, ok, fail, x),

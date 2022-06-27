@@ -1,9 +1,10 @@
-from log import get_logger
 from promise import Promise
 from queue import Queue
 from utils import hrtime, is_generator, unwind
 
-logger = get_logger(format='EventLoop{message}')
+from log import get_console
+
+console = get_console(format='<light-blue>EventLoop</light-blue>{message}')
 
 
 class EventLoop:
@@ -12,7 +13,7 @@ class EventLoop:
         self._time = None
 
     def run(self, entry_point, *args):
-        logger.info(f'run(entry_point={entry_point}, args={args}')
+        console(f'.run(entry_point={entry_point}, args={args}')
 
         self._execute(entry_point, *args)
 
@@ -23,17 +24,17 @@ class EventLoop:
         self._queue.close()
 
     def register_fileobj(self, fileobj, callback):
-        logger.info(f'.register_fileobj(fileobj={fileobj}, callback={callback})')
+        console(f'.register_fileobj(fileobj={fileobj}, callback={callback})')
 
         self._queue.register_fileobj(fileobj, callback)
 
     def unregister_fileobj(self, fileobj):
-        logger.info(f'.unregister_fileobj(fileobj={fileobj}')
+        console(f'.unregister_fileobj(fileobj={fileobj}')
 
         self._queue.unregister_fileobj(fileobj)
 
     def set_timer(self, duration):
-        logger.info(f'.set_timer(duration={duration})')
+        console(f'.set_timer(duration={duration})')
 
         p = Promise()
 
@@ -47,7 +48,7 @@ class EventLoop:
         return p
 
     def _execute(self, callback, *args):
-        logger.info(f'._execute(callback={callback}, args={args}')
+        console(f'._execute(callback={callback}, args={args}')
 
         self._time = hrtime()  # по идее не нужно
 
@@ -65,4 +66,4 @@ class EventLoop:
             print('Uncaught exception:', exc)
 
         self._time = hrtime()
-        logger.info(f'._execute end')
+        console(f'._execute end')

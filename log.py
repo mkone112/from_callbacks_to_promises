@@ -1,9 +1,17 @@
-from loguru import logger
 import sys
+from functools import lru_cache
+
+from loguru import logger
+
+logger.remove()
 
 
-def get_logger(color='light-blue', format='{process.name}: {message}'):
-    logger.remove()
-    colored_fmt = '<{color}>{format}</{color}>'.format(color=color, format=format)
-    logger.add(sys.stdout, format=colored_fmt)
-    return logger
+@lru_cache(None)
+def get_console(format):
+    logger.add(
+        sys.stdout,
+        level="INFO",
+        filter=lambda rec: rec['extra']['format'] == format,
+        format=format,
+    )
+    return logger.bind(format=format).info

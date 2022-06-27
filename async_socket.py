@@ -6,9 +6,9 @@ import socket
 from facade import Context
 from promise import Promise
 
-from log import get_logger
+from log import get_console
 
-logger = get_logger(format='async_socket.{message}')
+console = get_console(format='<light-green>async_socket</light-green>.{message}')
 
 
 class async_socket(Context):
@@ -20,7 +20,7 @@ class async_socket(Context):
         self._callbacks = {}
 
     def connect(self, addr):
-        logger.info(f'.connect(addr={addr})')
+        console(f'.connect(addr={addr})')
 
         if self._state != self.states.INITIAL:
             raise Exception(f'state {self.states.INITIAL} expected, but is {self._state}')
@@ -45,7 +45,7 @@ class async_socket(Context):
         return p
 
     def recv(self, n):
-        logger.info(f'async_socket.recv(n={n})')
+        console(f'async_socket.recv(n={n})')
 
         if self._state != self.states.CONNECTED:
             raise Exception(f'async_socket.recv(): self._state expected 2 but actual is {self._state}')
@@ -67,7 +67,7 @@ class async_socket(Context):
         return p
 
     def sendall(self, data):
-        logger.info(f'sendall(data={data})')
+        console(f'sendall(data={data})')
 
         if self._state != self.states.CONNECTED:
             raise Exception(f'async_socket.sendall(), self._state expected 2 but actual is {self._state}')
@@ -103,7 +103,7 @@ class async_socket(Context):
 
     def _on_event(self, mask):
         if self._state == self.states.CONNECTING:
-            logger.info('_on_event: CONNECTING')
+            console('_on_event: CONNECTING')
             if mask != selectors.EVENT_WRITE:
                 raise Exception(
                     f'_on_event(): mask {selectors.EVENT_WRITE} expeted, but {mask} is actual'
@@ -133,7 +133,7 @@ class async_socket(Context):
                 callback(error)
 
     def _get_sock_error(self):
-        logger.info('_get_sock_error()')
+        console('_get_sock_error()')
 
         errorno = self._sock.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
         if errorno:

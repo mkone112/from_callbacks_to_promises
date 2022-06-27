@@ -4,8 +4,14 @@ import types
 from facade import Context
 from promise import Promise
 
+from log import get_console
+
+console = get_console(format='{message}')
+
 
 def unwind(gen, ok, fail, ret=None, method='send'):
+    console(f'unwind(gen={gen}, ok={ok}, fail={fail}, ret={ret}, method={method})')
+
     try:
         ret = getattr(gen, method)(ret)
     except StopIteration as stop:
@@ -76,4 +82,6 @@ def hrtime():
 
 
 def sleep(duration):
+    console(f'sleep({duration})')
+
     return Context._event_loop.set_timer(duration * 10e3)

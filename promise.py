@@ -1,13 +1,13 @@
 from facade import Context
 
-from log import get_logger
+from log import get_console
 
-logger = get_logger(format='Promise{message}')
+console = get_console(format='Promise{message}')
 
 
 class Promise(Context):
     def __init__(self):
-        logger.info('.__init__()')
+        console('.__init__()')
 
         self._on_resolve = []
         self._on_reject = []
@@ -18,7 +18,7 @@ class Promise(Context):
     # вроде это пока не используется
     # @classmethod
     # def all(cls, promises):
-    #     logger.info(f'.all({promises})')
+    #     console(f'.all({promises})')
     #
     #     pall = cls()
     #     counter = len(promises)

@@ -7,6 +7,10 @@ from event_loop import EventLoop
 from facade import Context
 from utils import sleep
 
+from log import get_console
+
+console = get_console(format='<bold>main</bold>{message}')
+
 
 class Client:
     def __init__(self, addr):
@@ -49,15 +53,22 @@ def print_balance(serv_addr, user_id):
 
 
 def main1(serv_addr):
+    console(f'.main1({serv_addr}')
+
     def on_sleep():
+        console('.main1.on_sleep()')
+
         b = yield get_user_balance(serv_addr, 1)
         print('side flow:', b)
+
+    # promise = sleep(5000)
+    # promise.then(on_sleep)
     sleep(5000).then(on_sleep)
 
     tasks = []
     for i in range(10):
         tasks.append(print_balance(serv_addr, i))
-    yield tasks
+    yield tasks  # может yield from?
 
 
 # def main2(*args):

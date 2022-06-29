@@ -15,6 +15,7 @@ def unwind(gen, ok, fail, ret=None, method='send'):
     unwind_console(f'(gen={gen}, ok={ok}, fail={fail}, ret={ret}, method={method})')
 
     try:
+        # пробуем пнуть герератор
         ret = getattr(gen, method)(ret)
         unwind_console(f': start generator, ret={ret}')
 
@@ -28,6 +29,8 @@ def unwind(gen, ok, fail, ret=None, method='send'):
         return fail(e)
 
     if is_generator(ret):
+        # gen вернул другой генератор
+
         unwind_console(f': ret is_generator')
 
         unwind(
@@ -54,11 +57,16 @@ def unwind(gen, ok, fail, ret=None, method='send'):
 
 
 def wait_all(col, ok, fail):
+    """Ждем всех, когда последний ... - передаем results в ok
+    col - collection?
+
+    """
     counter = len(col)
     results = [None] * counter
 
     def _resolve_single(i):
         def _do_resolve(val):
+            """последний _do_resolve запустит ok(results)"""
             nonlocal counter
             results[i] = val
             counter -= 1
@@ -92,10 +100,11 @@ def is_promise(val):
 
 
 def hrtime():
+    """high-resolution real time"""
     return int(time.time() * 10e6)
 
 
-def sleep(duration):
+def sleep(duration) -> Promise:
     console(f'sleep({duration})')
 
     return Context._event_loop.set_timer(duration * 10e3)

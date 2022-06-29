@@ -5,10 +5,10 @@ import time
 
 from log import get_console
 
-console = get_console(format='Queue{message}')
+console = get_console(format='TaskQueue{message}')
 
 
-class Queue:
+class TaskQueue:
     def __init__(self):
         self._selector = selectors.DefaultSelector()
         self._timers = []
@@ -34,7 +34,7 @@ class Queue:
 
         if self._ready:
             queue_element = self._ready.popleft()
-            console(f'.pop: Queue._ready not empty -> return {queue_element}')
+            console(f'.pop: TaskQueue._ready not empty -> return {queue_element}')
             return queue_element
 
         timeout = self.get_timeout(tick)
@@ -65,7 +65,7 @@ class Queue:
 
                 time.sleep(idle / 10e6)
 
-                console(f'.pop recursive call Queue.pop')
+                console(f'.pop recursive call TaskQueue.pop')
                 queue_element = self.pop(tick + idle)
 
                 console(f'.pop returning {queue_element}')
@@ -85,7 +85,7 @@ class Queue:
         try:
             """Берем первый готовый сокет"""
 
-            # console('Queue.select trying get event by timeout')
+            # console('TaskQueue.select trying get event by timeout')
             events = self._selector.select(timeout)
         except OSError:
             # console(f'Qeue.select error - sleeping for {timeout}')
@@ -96,7 +96,7 @@ class Queue:
         return events
 
     def get_timeout(self, tick):
-        console(f'Queue.get_timeout(tick={tick})')
+        console(f'TaskQueue.get_timeout(tick={tick})')
         return (self._timers[0][0] - tick) / 10e6 if self._timers else None
 
     def is_empty(self):

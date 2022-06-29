@@ -1,5 +1,5 @@
 from promise import Promise
-from queue import Queue
+from taskqueue import TaskQueue
 from utils import hrtime, is_generator, unwind
 
 from log import get_console
@@ -9,7 +9,7 @@ console = get_console(format='<light-blue>EventLoop</light-blue>{message}')
 
 class EventLoop:
     def __init__(self):
-        self._queue = Queue()
+        self._queue = TaskQueue()
         self._time = None
 
     def run(self, entry_point, *args):

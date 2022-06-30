@@ -59,7 +59,7 @@ def main1(serv_addr):
         console('.main1.on_sleep()')
 
         b = yield get_user_balance(serv_addr, 1)
-        print('side flow:', b)
+        print('side flow:', b)  # <- до сюда вроде не доходит...
 
     # promise = sleep(5000)
     # promise.then(on_sleep)
@@ -71,27 +71,36 @@ def main1(serv_addr):
     yield tasks  # может yield from?
 
 
-# def main2(*args):
-#     sock = async_socket(socket.AF_INET, socket.SOCK_STREAM)
-#     yield sock.connect(('t.co', 80))
-#
-#     try:
-#         yield sock.sendall(b'GET / HTTP/1.1\r\nHost: t.co\r\n\r\n')
-#         val = yield sock.recv(1024)
-#         print(val)
-#     finally:
-#         sock.close()
+def main2(*args):
+    sock = async_socket(socket.AF_INET, socket.SOCK_STREAM)
+    yield sock.connect(('info.cern.ch', 80))
 
+    try:
+        yield sock.sendall(b'GET / HTTP/1.1\r\nHost: info.cern.ch\r\n\r\n')
+        val = yield sock.recv(1024)
+        print(f'\n\n{val}\n\n')
+    finally:
+        sock.close()
+
+def gather(tasks):
+    yield tasks()
 
 if __name__ == '__main__':
-    print('Run main1()')
-    event_loop = EventLoop()
-    Context.set_event_loop(event_loop)
-
-    serv_addr = ('127.0.0.1', 53210)
-    event_loop.run(main1, serv_addr)
+    # print('Run main1()')
+    # event_loop = EventLoop()
+    # Context.set_event_loop(event_loop)
+    #
+    # serv_addr = ('127.0.0.1', 53210)
+    # event_loop.run(main1, serv_addr)
 
     # print('\nRun main2()')
     # event_loop = EventLoop()
     # Context.set_event_loop(event_loop)
     # event_loop.run(main2)
+
+
+    event_loop = EventLoop()
+    Context.set_event_loop(event_loop)
+    event_loop.run(
+        gather, main2
+    )

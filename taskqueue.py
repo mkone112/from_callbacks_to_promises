@@ -89,8 +89,8 @@ class TaskQueue:
             events = self._selector.select(timeout)
         except OSError:
             # console(f'Qeue.select error - sleeping for {timeout}')
-
-            time.sleep(timeout)
+            if timeout > 0:
+                time.sleep(timeout)
             events = tuple()
 
         return events

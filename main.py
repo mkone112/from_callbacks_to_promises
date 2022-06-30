@@ -61,9 +61,9 @@ def main1(serv_addr):
         b = yield get_user_balance(serv_addr, 1)
         print('side flow:', b)  # <- до сюда вроде не доходит...
 
-    # promise = sleep(5000)
-    # promise.then(on_sleep)
-    # sleep(5000).then(on_sleep)
+    promise = sleep(5000)
+    promise.then(on_sleep)
+    sleep(5000).then(on_sleep)
 
     tasks = []
     for i in range(10):

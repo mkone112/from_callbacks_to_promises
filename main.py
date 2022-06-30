@@ -82,10 +82,6 @@ def main2(*args):
     finally:
         sock.close()
 
-def gather(tasks):
-    # sleep(5000).then(lambda: None)
-    for task in tasks:
-        yield task
 
 if __name__ == '__main__':
     print('Run main1()')
@@ -99,10 +95,3 @@ if __name__ == '__main__':
     # event_loop = EventLoop()
     # Context.set_event_loop(event_loop)
     # event_loop.run(main2)
-
-
-    event_loop = EventLoop()
-    Context.set_event_loop(event_loop)
-    event_loop.run(
-        gather, (main2(), main2())
-    )

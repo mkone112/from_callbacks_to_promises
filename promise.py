@@ -1,6 +1,6 @@
 from facade import Context
 
-from log import get_callbable_representation, get_console
+from log import get_callable_representation, get_console
 
 console = get_console(format='<b><fg #F92672>Promise</fg #F92672></b>{message}')
 
@@ -47,7 +47,7 @@ class Promise(Context):
     #     return pall
 
     def then(self, callback):
-        callback_str = get_callbable_representation(callback)
+        callback_str = get_callable_representation(callback)
         console(f'.then(callback={callback_str})')
 
         if self._resolved:
@@ -61,7 +61,7 @@ class Promise(Context):
         return self
 
     def catch(self, callback):
-        callback_str = get_callbable_representation(callback)
+        callback_str = get_callable_representation(callback)
         console(f'.catch(callback={callback_str}')
 
         if self._rejected:

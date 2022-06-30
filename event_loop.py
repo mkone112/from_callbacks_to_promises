@@ -2,7 +2,7 @@ from promise import Promise
 from taskqueue import TaskQueue
 from utils import hrtime, is_generator, unwind
 
-from log import get_console
+from log import get_console, get_callable_representation
 
 console = get_console(format='<light-blue>EventLoop</light-blue>{message}')
 
@@ -24,7 +24,8 @@ class EventLoop:
         self._queue.close()
 
     def register_fileobj(self, fileobj, callback):
-        console(f'.register_fileobj(fileobj={fileobj}, callback={callback})')
+        callback_str = get_callable_representation(callback)
+        console(f'.register_fileobj(fileobj={fileobj}, callback={callback_str})')
 
         self._queue.register_fileobj(fileobj, callback)
 
@@ -48,7 +49,8 @@ class EventLoop:
         return p
 
     def _execute(self, callback, *args):
-        console(f'._execute(callback={callback}, args={args}')
+        callback_str = get_callable_representation(callback)
+        console(f'._execute(callback={callback_str}, args={args}')
 
         self._time = hrtime()  # по идее не нужно
 

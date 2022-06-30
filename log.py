@@ -19,7 +19,7 @@ def get_console(format):
     return logger.bind(format=format).info
 
 
-def get_callbable_representation(obj):
+def get_callable_representation(obj):
     if isinstance(obj, types.FunctionType) and obj.__name__ == '<lambda>':
         return inspect.getsource(obj).strip()
     return obj

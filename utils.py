@@ -4,7 +4,7 @@ import types
 from facade import Context
 from promise import Promise
 
-from log import get_console
+from log import get_console, get_callable_representation
 
 console = get_console(format='{message}')
 
@@ -12,7 +12,7 @@ unwind_console = get_console(format='<light-yellow>unwind</light-yellow>{message
 
 
 def unwind(gen, ok, fail, ret=None, method='send'):
-    unwind_console(f'(gen={gen}, ok={ok}, fail={fail}, ret={ret}, method={method})')
+    unwind_console(f'(gen={gen}, ok={get_callable_representation(ok)}, fail={get_callable_representation(fail)}, ret={ret}, method={method})')
 
     try:
         # пробуем пнуть герератор
@@ -20,11 +20,11 @@ def unwind(gen, ok, fail, ret=None, method='send'):
         unwind_console(f': start generator, ret={ret}')
 
     except StopIteration as stop:
-        unwind_console(f': StopIteration, return {ok}({stop.value})')
+        unwind_console(f': StopIteration, return {get_callable_representation(ok)}({stop.value})')
 
         return ok(stop.value)
     except Exception as e:
-        unwind_console(f': Exception, return {fail}({e})')
+        unwind_console(f': Exception, return {get_callable_representation(fail)}({e})')
 
         return fail(e)
 

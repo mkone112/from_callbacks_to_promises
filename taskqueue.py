@@ -3,7 +3,7 @@ import heapq
 import selectors
 import time
 
-from log import get_console
+from log import get_callable_representation, get_console
 
 console = get_console(format='TaskQueue{message}')
 
@@ -16,7 +16,8 @@ class TaskQueue:
         self._ready = collections.deque()
 
     def register_timer(self, tick, callback):
-        console(f'.register_timer(tick={tick}, callback={callback})')
+        callback_str = get_callable_representation(callback)
+        console(f'.register_timer(tick={tick}, callback={callback_str})')
 
         timer = (tick, self._timer_no, callback)
         heapq.heappush(self._timers, timer)

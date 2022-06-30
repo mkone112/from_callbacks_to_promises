@@ -1,6 +1,7 @@
 import json
 import random
 import socket
+import sys
 
 from async_socket import async_socket
 from event_loop import EventLoop
@@ -48,6 +49,7 @@ def print_balance(serv_addr, user_id):
     try:
         balance = yield get_user_balance(serv_addr, user_id)
         print(balance)
+        sys.exit()  # debug
     except Exception as exc:
         print('Catched:', exc)
 

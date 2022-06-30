@@ -63,7 +63,7 @@ def main1(serv_addr):
 
     # promise = sleep(5000)
     # promise.then(on_sleep)
-    sleep(5000).then(on_sleep)
+    # sleep(5000).then(on_sleep)
 
     tasks = []
     for i in range(10):
@@ -83,15 +83,17 @@ def main2(*args):
         sock.close()
 
 def gather(tasks):
-    yield tasks()
+    # sleep(5000).then(lambda: None)
+    for task in tasks:
+        yield task
 
 if __name__ == '__main__':
-    # print('Run main1()')
-    # event_loop = EventLoop()
-    # Context.set_event_loop(event_loop)
-    #
-    # serv_addr = ('127.0.0.1', 53210)
-    # event_loop.run(main1, serv_addr)
+    print('Run main1()')
+    event_loop = EventLoop()
+    Context.set_event_loop(event_loop)
+
+    serv_addr = ('127.0.0.1', 53210)
+    event_loop.run(main1, serv_addr)
 
     # print('\nRun main2()')
     # event_loop = EventLoop()
@@ -102,5 +104,5 @@ if __name__ == '__main__':
     event_loop = EventLoop()
     Context.set_event_loop(event_loop)
     event_loop.run(
-        gather, main2
+        gather, (main2(), main2())
     )

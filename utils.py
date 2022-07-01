@@ -22,7 +22,7 @@ def unwind(generator, on_success, on_exceptions, to_generator=None, method='send
     except StopIteration as stop:
         unwind_console(f': StopIteration, return {get_callable_representation(on_success)}({stop.value})')
 
-        return on_success(stop.value) if on_success else None
+        return on_success(to_generator=stop.value) if on_success else None
     except Exception as e:
         unwind_console(f': Exception, return {get_callable_representation(on_exceptions)}({e})')
 
@@ -35,7 +35,7 @@ def unwind(generator, on_success, on_exceptions, to_generator=None, method='send
 
         unwind(
             returned,
-            on_success=lambda x: unwind(generator, on_success, on_exceptions, x),
+            on_success=lambda to_generator: unwind(generator, on_success, on_exceptions, to_generator=to_generator),
             on_exceptions=lambda e: unwind(generator, on_success, on_exceptions, e, 'throw'),
         )
     elif is_promise(returned):
@@ -51,22 +51,22 @@ def unwind(generator, on_success, on_exceptions, to_generator=None, method='send
 
         wait_all(
             returned,
-            lambda x=None: unwind(generator, on_success, on_exceptions, x),
+            lambda to_generator=None: unwind(generator, on_success, on_exceptions, to_generator=to_generator),
             lambda e: unwind(generator, on_success, on_exceptions, e, 'throw'),
         )
 
 
-def wait_all(awaitables, ok, fail):
+def wait_all(awaitables, on_success, fail):
     """Ждем всех, когда последний выполнится - затем снова пинаем генератор """
 
     counter = len(awaitables)
 
-    def _do_resolve(_):
+    def _do_resolve(to_generator):  # to_generator чтобы консистетно с остальными on_success
         """последний _do_resolve запустит on_success(results)"""
         nonlocal counter
         counter -= 1
         if counter == 0:
-            ok(None)
+            on_success(None)
 
 
     for i, c in enumerate(awaitables):

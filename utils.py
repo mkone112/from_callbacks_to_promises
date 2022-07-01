@@ -13,6 +13,7 @@ unwind_console = get_console(format='<light-yellow>unwind</light-yellow>{message
 
 
 def unwind(generator, on_success, on_exceptions, to_generator=None, method='send'):
+    """Подписывается на события с помощью промисов, затем возвращает состояние обратно генератору, либо возвращает из него значение"""
     unwind_console(f'(gen={generator}, on_success={get_callable_representation(on_success)}, fail={get_callable_representation(on_exceptions)}, to_generator={to_generator}, method={method})')
 
     try:
@@ -37,7 +38,7 @@ def unwind(generator, on_success, on_exceptions, to_generator=None, method='send
         unwind(
             returned,
             on_success=partial(unwind, generator, on_success, on_exceptions),
-            on_exceptions=lambda to_generator: unwind(generator, on_success, on_exceptions, to_generator=to_generator, method='throw'),
+            on_exceptions=partial(unwind, generator, on_success, on_exceptions, method='throw'),
         )
     elif is_promise(returned):
         unwind_console(': to_generator is_promise')
@@ -45,15 +46,15 @@ def unwind(generator, on_success, on_exceptions, to_generator=None, method='send
         returned.then(
             partial(unwind, generator, on_success, on_exceptions)
         ).catch(
-            lambda to_generator: unwind(generator, on_success, on_exceptions, to_generator=to_generator, method='throw')
+            partial(unwind, generator, on_success, on_exceptions, method='throw')
         )
     else:
         unwind_console(': else')
 
         wait_all(
             returned,
-            lambda to_generator=None: unwind(generator, on_success, on_exceptions, to_generator=to_generator),
-            lambda to_generator: unwind(generator, on_success, on_exceptions, to_generator=to_generator, method='throw'),
+            partial(unwind, generator, on_success, on_exceptions),
+            partial(unwind, generator, on_success, on_exceptions, method='throw'),
         )
 
 

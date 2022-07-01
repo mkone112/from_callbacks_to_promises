@@ -59,7 +59,10 @@ class TaskQueue:
         if not self._ready and self._timers:
             idle = (self._timers[0][0] - tick)
 
-            console(f'._ready is empty, _timers={self._timers}')
+            cleaned_timers = [(tick, timer_no, get_callable_representation(callback))
+                              for tick, timer_no, callback
+                              in self._timers]
+            console(f'._ready is empty, _timers={cleaned_timers}')
 
             if idle > 0:
                 console(f'.pop sleeping for {idle / 10e6}')

@@ -57,30 +57,26 @@ def unwind(generator, on_success, on_exceptions, to_generator=None, method='send
 
 
 def wait_all(awaitables, ok, fail):
-    """Ждем всех, когда последний ... - передаем results в on_success
-    awaitables - collection?
+    """Ждем всех, когда последний выполнится - затем снова пинаем генератор """
 
-    """
     counter = len(awaitables)
 
-    def _resolve_single(i):
-        def _do_resolve(val):
-            """последний _do_resolve запустит on_success(results)"""
-            nonlocal counter
-            counter -= 1
-            if counter == 0:
-                ok(None)
+    def _do_resolve(_):
+        """последний _do_resolve запустит on_success(results)"""
+        nonlocal counter
+        counter -= 1
+        if counter == 0:
+            ok(None)
 
-        return _do_resolve
 
     for i, c in enumerate(awaitables):
         if is_generator(c):
-            unwind(c, on_success=_resolve_single(i), on_exceptions=fail)
+            unwind(c, on_success=_do_resolve, on_exceptions=fail)
             continue
 
         if is_promise(c):
             c.then(
-                _resolve_single(i)
+                _do_resolve
             ).catch(
                 fail
             )

@@ -90,7 +90,7 @@ def print_balance(serv_addr, user_id):
 
         balance = yield get_user_balance(serv_addr, user_id)
         print(balance)
-        sys.exit()  # debug
+        # sys.exit()  # debug
     except Exception as exc:
         print('Catched:', exc)
 
@@ -104,14 +104,15 @@ def main1(serv_addr):
         b = yield get_user_balance(serv_addr, 1)
         print('side flow:', b)  # <- до сюда вроде не доходит...
 
-    promise = sleep(5000)
-    promise.then(on_sleep)
+    # promise = sleep(5000)
+    # promise.then(on_sleep)
     # sleep(5000).then(on_sleep)
 
     tasks = []
     for i in range(10):
         tasks.append(print_balance(serv_addr, i))
-    yield tasks  # может yield from?
+    # использование здесь yield from позволило бы избавиться от wait_all, и блок else в unwind
+    yield tasks
 
 
 def main2(*args):
@@ -122,7 +123,7 @@ def main2(*args):
         yield sock.sendall(b'GET / HTTP/1.1\r\nHost: info.cern.ch\r\n\r\n')
         val = yield sock.recv(1024)
         print(f'\n\n{val}\n\n')
-    finally:
+    finally:  # позволяет закрывать сокет при выходе из функции
         sock.close()
 
 
@@ -134,7 +135,7 @@ if __name__ == '__main__':
     serv_addr = ('127.0.0.1', 53210)
     event_loop.run(main1, serv_addr)
 
-    # print('\nRun main2()')
-    # event_loop = EventLoop()
-    # Context.set_event_loop(event_loop)
-    # event_loop.run(main2)
+    print('\nRun main2()')
+    event_loop = EventLoop()
+    Context.set_event_loop(event_loop)
+    event_loop.run(main2)

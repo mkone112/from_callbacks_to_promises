@@ -11,7 +11,8 @@ logger.remove()
 @lru_cache(None)
 def get_console(format):
     logger.add(
-        sys.stdout,
+        # sys.stdout,
+        open('/dev/null', 'w'),
         level="INFO",
         filter=lambda rec: rec['extra']['format'] == format,
         format=format,

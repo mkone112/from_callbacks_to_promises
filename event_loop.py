@@ -43,7 +43,7 @@ class EventLoop:
 
         self._queue.register_timer(
             self._time + duration,
-            lambda _: p._resolve()
+            p._resolve
         )
 
         return p

@@ -30,7 +30,7 @@ class Client:
         return self._get(f'GET account {account_id}\n')
 
     def _get(self, req):
-        client_console(f'._get(req={req})')
+        client_console(f'._get(req={req!r})')
 
         sock = async_socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -65,7 +65,7 @@ def get_user_balance(serv_addr, user_id):
 
     client = Client(serv_addr)
 
-    console(f'.get_user_balance: yeild from client.get_user(user_id={user_id}')
+    console(f'.get_user_balance: yield from client.get_user(user_id={user_id})')
 
     user = yield client.get_user(user_id)
     if user_id % 5 == 0:

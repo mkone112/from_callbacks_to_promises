@@ -11,13 +11,13 @@ console = get_console(format='{message}')
 unwind_console = get_console(format='<light-yellow>unwind</light-yellow>{message}')
 
 
-def unwind(gen, on_success, on_exceptions, ret=None, method='send'):
-    unwind_console(f'(gen={gen}, on_success={get_callable_representation(on_success)}, fail={get_callable_representation(on_exceptions)}, ret={ret}, method={method})')
+def unwind(gen, on_success, on_exceptions, to_generator=None, method='send'):
+    unwind_console(f'(gen={gen}, on_success={get_callable_representation(on_success)}, fail={get_callable_representation(on_exceptions)}, to_generator={to_generator}, method={method})')
 
     try:
         # пробуем пнуть герератор
-        ret = getattr(gen, method)(ret)
-        unwind_console(f': start generator, ret={ret}')
+        returned = getattr(gen, method)(to_generator)
+        unwind_console(f': complete send to generator, returned={returned}')
 
     except StopIteration as stop:
         unwind_console(f': StopIteration, return {get_callable_representation(on_success)}({stop.value})')
@@ -28,20 +28,20 @@ def unwind(gen, on_success, on_exceptions, ret=None, method='send'):
 
         return on_exceptions(e)
 
-    if is_generator(ret):
+    if is_generator(returned):
         # gen вернул другой генератор
 
-        unwind_console(f': ret is_generator')
+        unwind_console(f': to_generator is_generator')
 
         unwind(
-            ret,
+            returned,
             on_success=lambda x: unwind(gen, on_success, on_exceptions, x),
             on_exceptions=lambda e: unwind(gen, on_success, on_exceptions, e, 'throw'),
         )
-    elif is_promise(ret):
-        unwind_console(': ret is_promise')
+    elif is_promise(returned):
+        unwind_console(': to_generator is_promise')
 
-        ret.then(
+        returned.then(
             lambda x=None: unwind(gen, on_success, on_exceptions, x)
         ).catch(
             lambda e: unwind(gen, on_success, on_exceptions, e, 'throw')
@@ -50,7 +50,7 @@ def unwind(gen, on_success, on_exceptions, ret=None, method='send'):
         unwind_console(': else')
 
         wait_all(
-            ret,
+            returned,
             lambda x=None: unwind(gen, on_success, on_exceptions, x),
             lambda e: unwind(gen, on_success, on_exceptions, e, 'throw'),
         )

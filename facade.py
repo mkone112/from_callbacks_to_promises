@@ -7,4 +7,4 @@ class Context:
 
     @classmethod
     def set_event_loop(cls, event_loop):
-        cls._event_loop = event_loop
+        cls.event_loop = event_loop

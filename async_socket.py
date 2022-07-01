@@ -15,7 +15,7 @@ class async_socket(Context):
     def __init__(self, *args):
         self._sock = socket.socket(*args)
         self._sock.setblocking(False)
-        self._event_loop.register_fileobj(self._sock, self._on_event)
+        self.event_loop.register_fileobj(self._sock, self._on_event)
         self._state = self.states.INITIAL
         self._callbacks = {}
 
@@ -96,7 +96,7 @@ class async_socket(Context):
         return p
 
     def close(self):
-        self._event_loop.unregister_fileobj(self._sock)
+        self.event_loop.unregister_fileobj(self._sock)
         self._callbacks.clear()
         self._state = self.states.CLOSED
         self._sock.close()

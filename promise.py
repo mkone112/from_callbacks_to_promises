@@ -53,7 +53,7 @@ class Promise(Context):
         if self._resolved:
             console(f'.then: self._resolved -> el._execute({callback_str}, *{self._value})')
 
-            self._event_loop._execute(callback, *self._value)
+            self.event_loop._execute(callback, *self._value)
         elif not self._rejected:
             console(f'.then: not self._rejected -> append {callback_str} to self._on_resolve')
 
@@ -67,7 +67,7 @@ class Promise(Context):
         if self._rejected:
             console(f'.catch: self._rejected -> el._execute({callback_str}, *{self._value}')
 
-            self._event_loop._execute(callback, self._value)
+            self.event_loop._execute(callback, self._value)
         elif not self._resolved:
             console(f'.catch: not self._resolved -> append {callback_str} to self._on_reject')
 
@@ -89,7 +89,7 @@ class Promise(Context):
             console(f'._resolve: el._execute\n\t{self._on_resolve}')
 
         for callback in self._on_resolve:
-            self._event_loop._execute(callback, *args)
+            self.event_loop._execute(callback, *args)
 
     def _reject(self, error):
         if self._resolved or self._rejected:

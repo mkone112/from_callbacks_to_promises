@@ -52,16 +52,16 @@ class EventLoop:
         callback_str = get_callable_representation(callback)
         console(f'._execute(callback={callback_str}, args={args}')
 
-        self._time = hrtime()  # по идее не нужно
+        # self._time = hrtime()  # по идее не нужно
 
         try:
-            ret = callback(*args)
+            returned = callback(*args)
 
-            if is_generator(ret):
+            if is_generator(returned):
                 unwind(
-                    ret,
-                    on_success=lambda *_: None,
-                    on_exceptions=lambda e: print('Uncaught rejection:', e)
+                    generator=returned,
+                    on_success=None,
+                    on_exceptions=lambda e: print('Uncaught rejection:', e),
                 )
 
         except Exception as exc:

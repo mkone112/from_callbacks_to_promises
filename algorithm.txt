@@ -1,14 +1,14 @@
 передаем entry point в el.run -> el.execute
     # все генераторы - пропускаем через unwind, который последовательно пинает его пока он не вернет промис, результат или эксепшен
-    # если в процессе возвращается промис - то в _on_resolve кладется lambda x=None: unwind(gen, on_success, on_exceptions, x)) c по сути генератором который вернул этот промис и promise._on_resolve регается в el,
+    # если в процессе возвращается промис - то в _on_resolve кладется lambda x=None: unwind(generator, on_success, on_exceptions, x)) c по сути генератором который вернул этот промис и promise._on_resolve регается в el,
     # т.е. по идее el снова дернет в будущем этот промис и по идее вернет результат туда же... но это пока не точно
-        # как и lambda e: unwind(gen, on_success, on_exceptions, e, 'throw' в _reject
+        # как и lambda e: unwind(generator, on_success, on_exceptions, e, 'throw' в _reject
             # что по идее позволит в дальнейшем дергать Exceptions из промиса в el
     ep это генератор -> unwind(main(*args), ok=lambda *_: None, fail=lambda e: print('Uncaught rejection: {e}'))
         пробуем пнуть main(*args)
             sleep(duration=5000) -> Promise
-                Context._event_loop.set_timer(duration * 10e3)
-                    Context._event_loop._queue._register_timer(now + duration, p._resolve)
+                Context.event_loop.set_timer(duration * 10e3)
+                    Context.event_loop._queue._register_timer(now + duration, p._resolve)
             p._on_resolve.append(main.on_sleep)
             создаем 10 генераторов main.print_balance и возвращаем их в вызывающий код  # ?может тут нужен был yield from
         wait_all(
@@ -22,7 +22,7 @@
         )
             для каждого генератора
                 unwind(gen=gen,
-                        # пишет каждый результат в wait_all.results[i], в конце вызывает unwind(gen=main(*args), on_success=lambda *_: None, on_exceptions=lambda e: print('Uncaught rejection: {e}'), results)
+                        # пишет каждый результат в wait_all.results[i], в конце вызывает unwind(generator=main(*args), on_success=lambda *_: None, on_exceptions=lambda e: print('Uncaught rejection: {e}'), results)
                        ok=_resolve_single(i),
                        fail=fail)
                        пинаем генератор -> print_balance возвращает генератор get_user_balance

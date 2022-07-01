@@ -60,8 +60,8 @@ class EventLoop:
             if is_generator(ret):
                 unwind(
                     ret,
-                    ok=lambda *_: None,
-                    fail=lambda e: print('Uncaught rejection:', e)
+                    on_success=lambda *_: None,
+                    on_exceptions=lambda e: print('Uncaught rejection:', e)
                 )
 
         except Exception as exc:

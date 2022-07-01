@@ -11,8 +11,8 @@ console = get_console(format='{message}')
 unwind_console = get_console(format='<light-yellow>unwind</light-yellow>{message}')
 
 
-def unwind(gen, ok, fail, ret=None, method='send'):
-    unwind_console(f'(gen={gen}, ok={get_callable_representation(ok)}, fail={get_callable_representation(fail)}, ret={ret}, method={method})')
+def unwind(gen, on_success, on_exceptions, ret=None, method='send'):
+    unwind_console(f'(gen={gen}, on_success={get_callable_representation(on_success)}, fail={get_callable_representation(on_exceptions)}, ret={ret}, method={method})')
 
     try:
         # пробуем пнуть герератор
@@ -20,13 +20,13 @@ def unwind(gen, ok, fail, ret=None, method='send'):
         unwind_console(f': start generator, ret={ret}')
 
     except StopIteration as stop:
-        unwind_console(f': StopIteration, return {get_callable_representation(ok)}({stop.value})')
+        unwind_console(f': StopIteration, return {get_callable_representation(on_success)}({stop.value})')
 
-        return ok(stop.value)
+        return on_success(stop.value)
     except Exception as e:
-        unwind_console(f': Exception, return {get_callable_representation(fail)}({e})')
+        unwind_console(f': Exception, return {get_callable_representation(on_exceptions)}({e})')
 
-        return fail(e)
+        return on_exceptions(e)
 
     if is_generator(ret):
         # gen вернул другой генератор
@@ -35,29 +35,29 @@ def unwind(gen, ok, fail, ret=None, method='send'):
 
         unwind(
             ret,
-            ok=lambda x: unwind(gen, ok, fail, x),
-            fail=lambda e: unwind(gen, ok, fail, e, 'throw'),
+            on_success=lambda x: unwind(gen, on_success, on_exceptions, x),
+            on_exceptions=lambda e: unwind(gen, on_success, on_exceptions, e, 'throw'),
         )
     elif is_promise(ret):
         unwind_console(': ret is_promise')
 
         ret.then(
-            lambda x=None: unwind(gen, ok, fail, x)
+            lambda x=None: unwind(gen, on_success, on_exceptions, x)
         ).catch(
-            lambda e: unwind(gen, ok, fail, e, 'throw')
+            lambda e: unwind(gen, on_success, on_exceptions, e, 'throw')
         )
     else:
         unwind_console(': else')
 
         wait_all(
             ret,
-            lambda x=None: unwind(gen, ok, fail, x),
-            lambda e: unwind(gen, ok, fail, e, 'throw'),
+            lambda x=None: unwind(gen, on_success, on_exceptions, x),
+            lambda e: unwind(gen, on_success, on_exceptions, e, 'throw'),
         )
 
 
 def wait_all(col, ok, fail):
-    """Ждем всех, когда последний ... - передаем results в ok
+    """Ждем всех, когда последний ... - передаем results в on_success
     col - collection?
 
     """
@@ -66,7 +66,7 @@ def wait_all(col, ok, fail):
 
     def _resolve_single(i):
         def _do_resolve(val):
-            """последний _do_resolve запустит ok(results)"""
+            """последний _do_resolve запустит on_success(results)"""
             nonlocal counter
             results[i] = val
             counter -= 1
@@ -77,7 +77,7 @@ def wait_all(col, ok, fail):
 
     for i, c in enumerate(col):
         if is_generator(c):
-            unwind(c, ok=_resolve_single(i), fail=fail)
+            unwind(c, on_success=_resolve_single(i), on_exceptions=fail)
             continue
 
         if is_promise(c):

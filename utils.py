@@ -1,5 +1,6 @@
 import time
 import types
+from functools import partial
 
 from facade import Context
 from promise import Promise
@@ -23,10 +24,10 @@ def unwind(generator, on_success, on_exceptions, to_generator=None, method='send
         unwind_console(f': StopIteration, return {get_callable_representation(on_success)}({stop.value})')
 
         return on_success(to_generator=stop.value) if on_success else None
-    except Exception as e:
-        unwind_console(f': Exception, return {get_callable_representation(on_exceptions)}({e})')
+    except Exception as exc:
+        unwind_console(f': Exception, return {get_callable_representation(on_exceptions)}({exc})')
 
-        return on_exceptions(e)
+        return on_exceptions(to_generator=exc)
 
     if is_generator(returned):
         # generator вернул другой генератор
@@ -35,16 +36,16 @@ def unwind(generator, on_success, on_exceptions, to_generator=None, method='send
 
         unwind(
             returned,
-            on_success=lambda to_generator: unwind(generator, on_success, on_exceptions, to_generator=to_generator),
-            on_exceptions=lambda e: unwind(generator, on_success, on_exceptions, e, 'throw'),
+            on_success=partial(unwind, generator, on_success, on_exceptions),
+            on_exceptions=lambda to_generator: unwind(generator, on_success, on_exceptions, to_generator=to_generator, method='throw'),
         )
     elif is_promise(returned):
         unwind_console(': to_generator is_promise')
 
         returned.then(
-            lambda x=None: unwind(generator, on_success, on_exceptions, x)
+            partial(unwind, generator, on_success, on_exceptions)
         ).catch(
-            lambda e: unwind(generator, on_success, on_exceptions, e, 'throw')
+            lambda to_generator: unwind(generator, on_success, on_exceptions, to_generator=to_generator, method='throw')
         )
     else:
         unwind_console(': else')
@@ -52,7 +53,7 @@ def unwind(generator, on_success, on_exceptions, to_generator=None, method='send
         wait_all(
             returned,
             lambda to_generator=None: unwind(generator, on_success, on_exceptions, to_generator=to_generator),
-            lambda e: unwind(generator, on_success, on_exceptions, e, 'throw'),
+            lambda to_generator: unwind(generator, on_success, on_exceptions, to_generator=to_generator, method='throw'),
         )
 
 
